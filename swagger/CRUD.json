@@ -1,0 +1,412 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0",
+    "title": "Products & Categories Api List",
+    "description": "Collection of api containing all CRUD operations on Products & Categories.",
+    "contact": {}
+  },
+  "host": "localhost:8000",
+  "basePath": "/",
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/categories/create": {
+      "post": {
+        "description": "Create single category",
+        "summary": "Create Category",
+        "tags": [
+          "Categories"
+        ],
+        "operationId": "CreateCategory",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "parameters": [
+          {
+            "name": "categoryName",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/categories/readAll": {
+      "get": {
+        "description": "List of all categories",
+        "summary": "Get all categories",
+        "tags": [
+          "Categories"
+        ],
+        "operationId": "Getallcategories",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/categories/{id}": {
+      "get": {
+        "description": "Get single category by id",
+        "summary": "Single Category",
+        "tags": [
+          "Categories"
+        ],
+        "operationId": "SingleCategory",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/categories/update/{id}": {
+      "put": {
+        "description": "Update category by category id",
+        "summary": "Update Category",
+        "tags": [
+          "Categories"
+        ],
+        "operationId": "UpdateCategory",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "categoryName",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/categories/delete/{id}": {
+      "delete": {
+        "description": "Delete single category by id",
+        "summary": "Delete Category",
+        "tags": [
+          "Categories"
+        ],
+        "operationId": "DeleteCategory",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/products/create": {
+      "post": {
+        "description": "Creating product",
+        "summary": "Create Product",
+        "tags": [
+          "Products"
+        ],
+        "operationId": "CreateProduct",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "productName",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "qtyPerUnit",
+            "in": "formData",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          },
+          {
+            "name": "unitPrice",
+            "in": "formData",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          },
+          {
+            "name": "unitInStock",
+            "in": "formData",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          },
+          {
+            "name": "discontinued",
+            "in": "formData",
+            "required": true,
+            "type": "boolean",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/products/readAll": {
+      "get": {
+        "description": "List of all the products",
+        "summary": "Get all products",
+        "tags": [
+          "Products"
+        ],
+        "operationId": "Getallproducts",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/products/read/{id}": {
+      "get": {
+        "description": "Get single product by id",
+        "summary": "Single Product",
+        "tags": [
+          "Products"
+        ],
+        "operationId": "SingleProduct",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/products/update/{id}": {
+      "put": {
+        "description": "Update Products",
+        "summary": "Update product",
+        "tags": [
+          "Products"
+        ],
+        "operationId": "Updateproduct",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "categoryId",
+            "in": "formData",
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "productName",
+            "in": "formData",
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "qtyPerUnit",
+            "in": "formData",
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          },
+          {
+            "name": "unitPrice",
+            "in": "formData",
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          },
+          {
+            "name": "unitInStock",
+            "in": "formData",
+            "type": "integer",
+            "format": "int32",
+            "description": ""
+          },
+          {
+            "name": "discontinued",
+            "in": "formData",
+            "type": "boolean",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/products/delete/{id}": {
+      "delete": {
+        "description": "Delete Product by product id",
+        "summary": "Delete Product",
+        "tags": [
+          "Products"
+        ],
+        "operationId": "DeleteProduct",
+        "deprecated": false,
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {}
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Categories",
+      "description": "Api containing all CRUD operations on Categories"
+    },
+    {
+      "name": "Products",
+      "description": "Api containing all crud operations on Products"
+    }
+  ]
+}
