@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const url = `mongodb://https://product-category-crud.herokuapp.com/shopping-cart`;
+const url = `mongodb://localhost/shopping-cart`;
 const opts = { 
     useNewUrlParser: true ,
     useFindAndModify:false,

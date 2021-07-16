@@ -1,5 +1,5 @@
 const http = require('http')
-const port = '8000'
+const port = '3000'
 const swaggerUI = require('swagger-ui-express')
 const swaggerJsDoc = require('./swagger/CRUD.json')
 
@@ -8,7 +8,7 @@ const options = {
         info:{
             title:'Products & Categories API',
             version:'1.0.0',
-            description:'[ Base URL: http://localhost:8000 ]'
+            description:'[ Base URL: http://localhost:3000 ]'
         }
     },
     apis:["server.js"]
