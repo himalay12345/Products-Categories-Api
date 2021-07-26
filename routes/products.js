@@ -1,12 +1,12 @@
 const router = require('express').Router()
-const productsController = require('../controllers/productsController')
+const {createProduct,getAllProducts,getProductById,updateProduct,deleteProduct} = require('../controllers/productsController')
 
 // Products CRUD Operations
-router.post('/create',productsController.createProduct)
-router.get('/readAll',productsController.getAllProducts)
-router.get('/read/:id',productsController.getProductById)
-router.put('/update/:id',productsController.updateProduct)
-router.delete('/delete/:id',productsController.deleteProduct)
+router.post('/create',createProduct)
+router.get('/readAll',getAllProducts)
+router.get('/read/:id',getProductById)
+router.put('/update/:id',updateProduct)
+router.delete('/delete/:id',deleteProduct)
 
 
 module.exports = router

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const url = `mongodb+srv://himalay12345:Ihv1zrSnLUUTUf5G@cluster0.qmwm5.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const url = `mongodb://localhost/shopping-cart`;
 const opts = { 
     useNewUrlParser: true ,
     useFindAndModify:false,

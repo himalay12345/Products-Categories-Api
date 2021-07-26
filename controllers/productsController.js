@@ -1,182 +1,202 @@
-const Product = require('../models/products')
-const Category = require('../models/category')
+const productsJoi = require('../validation/productsValidation')
+const {handleResponse, handleError} = require('../config/requestHandler')
+const {findProductByName, createProduct, setProductId, getAllProducts, getSingleProduct, updateProductList, deleteProductList} = require('../services/productServices')
+const {getSingleCategory} = require('../services/categoryServices')
 
 
-module.exports.getAllProducts = async (req, res) => {
-    let products = await Product.find({}).populate('categoryId').sort({createdAt: -1})
+module.exports = {
 
-    if(products){
-        return res.status(200).json({
-            status:'success',
-            length:products.length,
-            products:products
-        })
-    }
+    createProduct : async (req, res) => {
+        try{
+            const {productName,categoryId} = req.body;
 
-    else{
-        return res.status(404).json({
-            status:'fail',
-            msg:'Products Not Found'
-        })
-    }
-}
+            //Validation check for products 
+            const value = await productsJoi.validateProduct(req.body);
+            if(value.error)
+            {
+                return handleResponse({res,msg:value.error.details[0].message})
+            }
+            
+            //Check if product name already exists
+            const product = await findProductByName(productName)
+            if(product)
+            {
+                return handleResponse({
+                    res,
+                    msg:'Product already with this name exists !'
+                })
+            }
+            else{
+                // Check if category with this category id exists
+                const category = await getSingleCategory(categoryId)
+                if(!category)
+                {
+                    return handleResponse({
+                        res,
+                        msg:'No Category exists with this id!'
+                    })
+                }
 
-module.exports.getProductById = async (req, res) => {
-    try{
-    let products = await Product.findOne({productId:req.params.id}).populate('categoryId')
-
-    if(products){
-        return res.status(200).json({
-            status:'success',
-            products:products
-        })
-    }
-
-    else{
-        return res.status(404).json({
-            status:'fail',
-            msg:'Product Not Found'
-        })
-    }
-}
-catch(err)
-{
-    return res.status(404).json({
-        status:'fail',
-        msg:'Invalid Product Id'
-    })
-}
-}
-
-module.exports.createProduct = async (req, res) => {
-
-    try{
-
-    // Check if category id exists
-    if(req.body.categoryId)
-    {
-        let category = await Category.findOne({categoryId:req.body.categoryId})
-        if(!category)
-        {
-            return res.status(404).json({
-                status:'fail',
-                msg:'Invalid categoryId'
-            })
+                else{
+                // Create new product
+                const newProduct = await createProduct(req.body)
+                await setProductId(newProduct._id)
+                if(newProduct)
+                {
+                    return handleResponse({
+                        res,
+                        msg:'Product added successfully',
+                        data:newProduct
+                    })
+                }
+            
+                else{
+                    return handleResponse({
+                        res,
+                        msg:'Error in adding products'
+                    })
+                }
+                }
         }
     }
-
-    let product = await Product.create({
-        productName:req.body.productName,
-        qtyPerUnit:req.body.qtyPerUnit,
-        unitPrice:req.body.unitPrice,
-        unitInStock:req.body.unitInStock,
-        discontinued:req.body.discontinued,
-        categoryId:req.body.categoryId,
-    })
-
-
-    await Product.updateOne({
-        _id:product._id
-    },{
-    '$set': {
-        'productId':product._id
-    }
-})
-
-    let products = await Product.find({});
-
-
-    if(product)
-    {
-        return res.status(200).json({
-            status:'success',
-            length:products.length,
-            msg:'Product added successfully'
-        })
-    }
-
-    else{
-        return res.status(404).json({
-            status:'fail',
-            msg:'Error in adding products'
-        })
-    }
-}
-    catch(err)
-    {
-        return res.status(404).json({
-            status:'fail',
-            msg:err.message
-        })  
-    }
-}
-
-module.exports.updateProduct = async (req, res) => {
-
-    try{
-    console.log(req.body.categoryId)
-    // Check if category id exists
-    if(req.body.categoryId)
-    {
-        let category = await Category.findOne({categoryId:req.body.categoryId})
-        console.log(category)
-        if(!category)
+        catch(error)
         {
-            return res.status(404).json({
-                status:'fail',
-                msg:'Invalid categoryId'
+            return handleError({ res, error, data: error }) 
+        }
+    },
+
+    getAllProducts : async (req, res) => {
+        try{
+            const products = await getAllProducts()
+            if(products){
+                return handleResponse({
+                    res,
+                    data:products
+                })
+            }
+
+            else{
+                return handleResponse({
+                    res,
+                    msg:'No Products Found !'
+                })
+            }
+        }
+        catch(error)
+        {
+            return handleError({ res, error, data: error }) 
+
+        }
+    },
+
+    getProductById : async (req, res) => {
+    try{
+        const {id} = req.params;
+        // Check if id params exists
+        if(!id)
+        {
+            return handleResponse({res,msg:'Please Enter the product id'})
+        }
+
+        const product = await getSingleProduct(id)
+        if(product){
+            return handleResponse({
+                res,
+                data:product
             })
         }
-    }
 
-    let product = await Product.findOne({productId:req.params.id})
-    let nproduct = await Product.updateOne({
-        productId:req.params.id
-    },{
-    '$set': {
-        'productName':req.body.productName ? req.body.productName : product.productName,
-        'qtyPerUnit':req.body.qtyPerUnit ? req.body.qtyPerUnit : product.qtyPerUnit,
-        'unitPrice':req.body.unitPrice ? req.body.unitPrice : product.unitPrice,
-        'unitInStock':req.body.unitInStock ? req.body.unitInStock : product.unitInStock,
-        'discontinued':req.body.discontinued ? req.body.discontinued : product.discontinued,
-        'categoryId':req.body.categoryId ? req.body.categoryId : product.categoryId,
+        else{
+            return handleResponse({
+                res,
+                msg:'Product Not Found'
+            })
+        }
+        }
+        catch(error)
+        {
+            return handleError({ res, error, data: {...error,etype:'product'} }) 
+        }   
+    },
 
-    }
-})
-
-    let updated_product = await Product.find({productId:req.params.id})
-
-    if(nproduct.nModified > 0)
-    {
-        return res.status(200).json({
-            status:'success',
-            msg:'Product Updated successfully',
-            product:updated_product
-        })
-    }
-
-    else{
-        return res.status(404).json({
-            status:'fail',
-            msg:'Error in updating product'
-        })
-    }
-}
-catch(err)
-    {
-        return res.status(404).json({
-            status:'fail',
-            msg:err.message
-        })  
-    }
-}
-
-module.exports.deleteProduct = async (req, res) => {
+    updateProduct : async (req, res) => {
 
     try{
+        const {categoryId} = req.body;
+        const {id} = req.params;
 
-    let product = await Product.deleteOne({
-        productId:req.params.id})
+        // Check if category id exists
+        if(categoryId)
+        {
+            const category = await getSingleCategory(categoryId)
+            if(!category)
+            {
+                return handleResponse({
+                    res,
+                    msg:'No Category exists with this id!'
+                })
+            } 
+        }
+
+        const product = await updateProductList(id,req.body)
+        if(product)
+        {
+            return handleResponse({
+                res,
+                msg:'Product Updated successfully',
+                data:product
+            })
+        }
+        else{
+            return handleResponse({
+                res,
+                msg:'Error in updating product'
+            })
+        }
+        }
+        catch(error)
+            {
+                return handleError({ res, error, data:error }) 
+            }
+    },
+
+    deleteProduct : async (req, res) => {
+
+    try{
+        const {id} = req.params;
+
+        // Check if id params exists or not
+        if(!id)
+        {
+            return handleResponse({res,msg:'Please Enter the product id'})
+        }
+
+        // Check if products exists or not
+        const product = await getSingleProduct(id)
+        if(!product){
+            return handleResponse({
+                res,
+                msg:'Invalid product id'
+            })
+        }
+
+        //Delete product
+        const deletedProduct = await deleteProductList(id)
+        if(deletedProduct)
+        {
+            return handleResponse({
+                res,
+                msg:'Product deleted successfully'
+            })
+        }
+
+        else{
+            return handleResponse({
+                res,
+                msg:'Error in deleting product'
+            })
+        }
+        
 
     
 
@@ -201,9 +221,7 @@ module.exports.deleteProduct = async (req, res) => {
     }
     catch(err)
     {
-        return res.status(404).json({
-            status:'fail',
-            msg:err.message
-        })  
+        return handleError({ res, error, data: {...error,etype:'product'} })  
     }
     }
+}

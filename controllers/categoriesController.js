@@ -1,132 +1,193 @@
-const Category = require('../models/category')
-const mongoose = require('mongoose');
-
-module.exports.getAllCategories = async (req, res) => {
-    let categories = await Category.find({}).sort({createdAt: -1});
-
-    if(categories){
-        return res.status(200).json({
-            status:'success',
-            length:categories.length,
-            categories
-        })
-    }
-
-    else{
-        return res.status(404).json({
-            status:'fail',
-            msg:'Categories Not Found'
-        })
-    }
-}
-
-module.exports.getCategoryById = async (req, res) => {
-    let categories = await Category.find({categoryId:req.params.id})
-
-    if(categories){
-        return res.status(200).json({
-            status:'success',
-            categories:categories
-        })
-    }
-
-    else{
-        return res.status(404).json({
-            status:'fail',
-            msg:'Categories Not Found'
-        })
-    }
-}
-
-module.exports.createCategory = async (req, res) => {
-
-    let id = mongoose.Types.ObjectId();
-   
-    let category = await Category.create({
-        categoryName:req.body.categoryName,
-        categoryId:id
-    })
-
-    await Category.updateOne({
-        _id:category._id
-    },{
-    '$set': {
-        'categoryId':category._id
-    }
-    })
-
-    let categories = await Category.find({});
+const categoryJoi = require('../validation/categoryValidation')
+const {handleResponse, handleError} = require('../config/requestHandler')
+const {findCategoryByName, createCategory, setCategoryId, getAllCategories, getSingleCategory, updateCategoryList, deleteCategoryList} = require('../services/categoryServices')
+const {removeKeys} = require('../utils/removeKeys')
 
 
-    if(category)
-    {
-        return res.status(200).json({
-            status:'success',
-            length:categories.length,
-            msg:'Category added successfully'
-        })
-    }
+module.exports = {
 
-    else{
-        return res.status(404).json({
-            status:'fail',
-            msg:'Error in adding categories'
-        })
-    }
-}
+    createCategory : async (req, res) => {
+        try{
+            const {categoryName} = req.body;
 
-module.exports.updateCategory = async (req, res) => {
+            // Category Validation Check
+            const value = await categoryJoi.validateCategory(req.body);
+             if(value.error)
+            {
+                return handleResponse({res,msg:value.error.details[0].message})
+            }
 
-    let category = await Category.updateOne({
-        categoryId:req.params.id
-    },{
-    '$set': {
-        'categoryName':req.body.categoryName
-    }
-})
+            // Check if category already exists
+            const category = await findCategoryByName(categoryName)
+            if(!category)
+            {
+                const newCategory = await createCategory({categoryName})
+                await setCategoryId(newCategory._id)
+                const newFilteredCategory = await removeKeys(newCategory._doc, "__v");
+                const categories = await getAllCategories()
+                return handleResponse({
+                    res,
+                    msg:'Category Added successfully',
+                    data:{
+                        length:categories.length,
+                        Category:newFilteredCategory
+                    }
+                })
 
-    let updated_category = await Category.find({categoryId:req.params.id})
+            }
 
-    if(category.nModified > 0)
-    {
-        return res.status(200).json({
-            status:'success',
-            msg:'Category Updated successfully',
-            category:updated_category
-        })
-    }
-
-    else{
-        return res.status(404).json({
-            status:'fail',
-            msg:'Error in updating category'
-        })
-    }
-}
-
-module.exports.deleteCategory = async (req, res) => {
-
-    let category = await Category.deleteOne({
-        categoryId:req.params.id})
-
-    
-
-    let categories = await Category.find({});
-
-
-        if(category.deletedCount > 0)
+            else{
+                 return handleResponse({ res, msg: "Category Registered already!! please create new" });
+            }
+        }
+        catch(error)
         {
-            return res.status(200).json({
-                status:'success',
-                length:categories.length,
-                msg:'Category Deleted successfully',
-            })
+            return handleError({ res, error, data: error })
         }
+    },
+
+    getAllCategories : async (req, res) => {
+        try{
+            const categories = await getAllCategories()
+            if(categories){
+                return handleResponse({
+                    res,
+                    data:categories
+                })
+            }
+            else{
+                return handleResponse({
+                    res,
+                    msg:'No Categories Found'
+                })
+            }
+        }
+        catch(error)
+        {
+            return handleError({ res, error, data: error }) 
+        }
+    },
+
+    getCategoryById : async (req, res) => {
+        try{
+            const {id} = req.params;
+
+            // Check if id params is provided or not
+            if(!id)
+            {
+                return handleResponse({res,msg:'Please Enter the category id in params'})
+            }
+
+            const category = await getSingleCategory(id)
+
+            if(category){
+                return handleResponse({
+                    res,
+                    data:category
+                })
+            }
+
+            else{
+                return handleResponse({
+                    res,
+                    msg:'Category Not Found'
+                })
+            }
+        }
+        catch(error)
+        {
+            return handleError({ res, error, data: {...error,etype:'category'} }) 
+        }
+    },
+
+    updateCategory : async (req, res) => {
+        try{
+            const {id} = req.params;
+            const {categoryName} = req.body;
+
+            // Check if id params is provided or not
+            if(!id)
+            {
+                return handleResponse({res,msg:'Please Enter the category id'})
+            }
+
+            // Validation check for category name
+            const value = await categoryJoi.validateCategory(req.body);
+             if(value.error)
+            {
+                return handleResponse({res,msg:value.error.details[0].message})
+            }
+
+            const category = await getSingleCategory(id)
+            if(!category)
+            {
+                return handleResponse({
+                    res,
+                    msg:'Category Not Found'
+                })
+            }
+            const updateCategory = await updateCategoryList(id,req.body)
+            if(updateCategory)
+            {
+                return handleResponse({
+                    res,
+                    data:updateCategory
+                })
+            }
     
-        else{
-            return res.status(404).json({
-                status:'fail',
-                msg:'No Category found with this id'
-            })
+            else{
+                return handleResponse({
+                    res,
+                    msg:'Error in updating product'
+                })
+            }
+        }
+        catch(error){
+            return handleError({ res, error, data: error }) 
+        }
+    },
+
+    deleteCategory : async (req, res) => {
+
+        try{
+            const {id} = req.params;
+
+            //Check for query params 
+            if(!id)
+            {
+                return handleResponse({res,msg:'Please Enter the category id'})
+            }
+
+            //Check if category exists or not
+            const category = await getSingleCategory(id)
+            if(!category){
+                return handleResponse({
+                    res,
+                    msg:'Category Not Found'
+                })
+            }
+
+            // Delete category
+            const deleteCategory = await deleteCategoryList(id)    
+                if(deleteCategory.deletedCount > 0)
+                {
+                    return handleResponse({
+                        res,
+                        msg:'Category Deleted successfully',
+                    })
+                }
+            
+                else{
+                    return handleResponse({
+                        res,
+                        msg:'Error in deleting category'
+                    })
+                }
+        }
+        catch(error)
+        {
+            return handleError({ res, error, data: {...error,etype:'category'} }) 
+
         }
     }
+}
